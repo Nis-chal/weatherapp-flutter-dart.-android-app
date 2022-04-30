@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:weatherapp/utilities/constants.dart';
-
 class LocationScreen extends StatefulWidget {
   @override
   _LocationScreenState createState() => _LocationScreenState();
