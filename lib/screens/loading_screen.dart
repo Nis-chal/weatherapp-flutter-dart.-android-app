@@ -1,8 +1,14 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:weatherapp/screens/location_screen.dart';
 import 'package:weatherapp/services/location.dart';
 import 'package:http/http.dart' as http;
+import 'package:weatherapp/services/netwroking.dart';
+import 'package:weatherapp/screens/location_screen.dart';
+
+const apiKey = 'f51feebed32b2cdf216557c23725b582';
 
 class LoadingScreen extends StatefulWidget {
   LoadingScreen({Key? key}) : super(key: key);
@@ -12,52 +18,42 @@ class LoadingScreen extends StatefulWidget {
 }
 
 class _LoadingScreenState extends State<LoadingScreen> {
+  late double latitude;
+  late double longitude;
   @override
   void initState() {
     super.initState();
-    getLocation();
+    getLocationData();
   }
 
-  void getLocation() async {
+  void getLocationData() async {
     Location location = Location();
-    location.getCurrentLocation();
-  }
+    await location.getCurrentLocation();
+    latitude = location.latitude!;
+    longitude = location.longitude!;
+    NetworkHelper networkHelper = NetworkHelper(
+        'https://api.openweathermap.org/data/2.5/weather?lat=$latitude&lon=$longitude&appid=$apiKey');
 
-  void getData() async {
-    http.Response response = await http.get(Uri.parse(
-        'https://api.openweathermap.org/data/2.5/weather?lat=35&lon=139&appid=f51feebed32b2cdf216557c23725b582'));
-    if (response.statusCode == 200) {
-      String data = response.body;
-      var decodeData = jsonDecode(data);
-
-      double condition = decodeData['weather'][0]['id'];
-      int tempreture = decodeData['main']['temp'];
-      String cityName = decodeData['name'];
-
-      // double condition = jsonDecode(data)['weather'][0]['id'];
-      // int tempreture = jsonDecode(data)['main']['temp'];
-      // String cityName = jsonDecode(data)['name'];
-
-      // var longitude = jsonDecode(data)['coord']['lon'];
-      // var weatherDescription = jsonDecode(data)['weather'][0]['main'];
-      // print(weatherDescription);
-    } else {
-      print(response.statusCode);
-    }
+    var weatherData = await networkHelper.getData();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) {
+          return LocationScreen();
+        },
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    getData();
-
     return Scaffold(
       body: Center(
-          child: ElevatedButton(
-        onPressed: () {
-          getLocation();
-        },
-        child: Text('get location'),
-      )),
+        child: SpinKitDoubleBounce(
+          size: 100,
+          color: Colors.red,
+        ),
+      ),
     );
   }
 }
